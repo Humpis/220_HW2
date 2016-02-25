@@ -10,11 +10,19 @@
 ##############################
 
 toUpper:
-	#Define your code here
-	############################################
-	# DELETE THIS CODE. Only here to allow main program to run without fully implementing the function
-	la $v0, FMorseCipherArray
-	############################################
+	li $t0, 0 				#String length counter	
+toUpper_loop:
+	la $t1, 0($a0)				# first letter in  string
+	lb $t2, 0($t1)				
+	beqz $t2, done_toUpper			# hit NULL character at end of string
+	
+	addi $t1, $t1, 1			# advance to next character of string
+	addi $t0, $t0, 1			# counter++
+	j toUpper_loop
+	
+done_toUpper:
+	sub $t1, $t1, $t0
+	move $v0, $t1
 	jr $ra
 
 length2Char:
