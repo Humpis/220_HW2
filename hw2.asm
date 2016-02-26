@@ -48,7 +48,13 @@ done_length2char:
 	jr $ra
 
 strcmp:
-	#Define your code here
+	li $t0, 0 				# num of same chars
+	li $t1, 0 				# equal = false
+	blt $a2, 0, strcmp_done
+	
+strcmp_done:
+	move $v0, $t0
+	move $v1, $t1
 	jr $ra
 
 ##############################
