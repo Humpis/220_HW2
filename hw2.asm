@@ -10,10 +10,11 @@
 ##############################
 
 toUpper:
-	li $t0, 0 				#String length counter	
+	li $t0, 0 				# String length counter	
+	la $t1, 0($a0)				# adress of string
+	
 toUpper_loop:
-	la $t1, 0($a0)				# first letter in  string
-	lb $t2, 0($t1)				
+	lb $t2, 0($t1)				# letter
 	beqz $t2, done_toUpper			# hit NULL character at end of string
 	
 	addi $t1, $t1, 1			# advance to next character of string
