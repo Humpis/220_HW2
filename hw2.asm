@@ -14,9 +14,16 @@ toUpper:
 	la $t1, 0($a0)				# adress of string
 	
 toUpper_loop:
+	#beqz $t1, done_toUpper			# hit NULL character at end of string
 	lb $t2, 0($t1)				# letter
 	beqz $t2, done_toUpper			# hit NULL character at end of string
+	blt $t2, 'a', upperAlready		# if it doeant need uppering
+	bgt $t2, 'z', upperAlready
+	li $t3, 32
+	sub $t2, $t2, $t3			# make it upper case by subtracting 32
+	sb $t2, 0($t1)
 	
+upperAlready:
 	addi $t1, $t1, 1			# advance to next character of string
 	addi $t0, $t0, 1			# counter++
 	j toUpper_loop
