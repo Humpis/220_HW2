@@ -27,13 +27,24 @@ upperAlready:
 	j toUpper_loop
 	
 done_toUpper:
-	sub $a0, $a0, $t0
+	sub $a0, $a0, $t0			# make the starting adress of the string right
 	move $v0, $a0
 	jr $ra
 
 length2Char:
-	#Define your code here
-	li $v0, 0
+	li $t0, 0 				# String length counter	
+	lb $t1, ($a1)				# letter to stop on
+	
+length2char_loop:
+	lb $t2, 0($a0)				# letter
+	beqz $t2, done_length2char		# hit NULL character at end of string
+	beq $t2, $t1, done_length2char		# hit the terminating char
+	addi $a0, $a0, 1			# advance to next character of string
+	addi $t0, $t0, 1			# counter++
+	j length2char_loop
+	
+done_length2char:
+	move $v0, $t0
 	jr $ra
 
 strcmp:
