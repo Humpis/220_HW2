@@ -114,7 +114,30 @@ strcmp_done:
 ##############################
 
 toMorse:
-	#Define your code here
+	li $t0, 0 				# morse characters encoded 
+	li $t1, 0 				# sucsessful encoding = false
+	li $t2, 0 				# num chars converted
+	blt $a2, 1, toMorse_done		# if size is less than 1
+	
+toMorse_loop:
+	blt $a2, 1, toMorse_done		# out of size, need to put /0
+	lb $t3, ($a0)				# charactor of string to be turned into morse
+	beqz $t3, toMorse_doneSucsess		# converted all chars
+	addi $t4, $t3, -33			# convert char to array location
+	
+	
+	addi $t2, $t2, 1			# chars converted++
+	addi $a2, $a2, -1			# size--
+	addi $a0, $a0, 1			# advance to next char in string
+	j toMorse_loop
+	
+tomorse_doneSucess:
+	li $t1, 1				# sucess = true
+	
+toMorse_done:
+	#add /0
+	move $v0, $t0
+	move $v1, $t1
 	jr $ra
 
 createKey:
