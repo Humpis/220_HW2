@@ -14,7 +14,7 @@ toUpper_CSisFun: .asciiz "Computer Science is fun."
 
 # length2Char
 length2Char_header: .asciiz "\n\n********* length2Char *********\n"
-length2Char_char: .asciiz "S"
+length2Char_char: .asciiz "0"
 length2Char_CSisFun: .asciiz "Computer Science is fun."
 
 # strcmp

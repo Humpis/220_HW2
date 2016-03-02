@@ -123,15 +123,42 @@ toMorse_loop:
 	blt $a2, 1, toMorse_done		# out of size, need to put /0
 	lb $t3, ($a0)				# charactor of string to be turned into morse
 	beqz $t3, toMorse_doneSucsess		# converted all chars
-	addi $t4, $t3, -33			# convert char to array location
+	addi $t4, $t3, -33			# convert ascii to array[i]
+	sll $t4, $t4, 2				# t4 = t4*4
+	la $t5, MorseCode
+	add $t6, $t5, $t4			# t6 = array[i]
+	lw $t7, 0($t6)				# word at array[i]
+	#save registers and find size of morse code
+	addi $sp, $sp, -28			# make space on stack
+	sw $t0, 28($sp)				# save registers
+	sw $t1, 24($sp)
+	sw $t2, 20($sp)
+	sw $t7, 16($sp)
+	sw $a0, 12($sp)
+	sw $a1, 8($sp)
+	sw $a2, 4($sp)
+	sw $ra, 0($sp)
+	la $t7, ($a0)				# function params
+	la $a1, length2Char_char
+	jal length2Char
+	# v0 is length
+	lw $t0, 28($sp)				# restore registers
+	lw $t1, 24($sp)
+	lw $t2, 20($sp)
+	lw $t7, 16($sp)
+	lw $a0, 12($sp)
+	lw $a1, 8($sp)
+	lw $a2, 4($sp)
+	lw $ra, 0($sp)
+	addi $sp, $sp, 28			# dealocate space on stack
 	
 	
 	addi $t2, $t2, 1			# chars converted++
-	addi $a2, $a2, -1			# size--
+	add $a2, $a2, $v0			# size - length
 	addi $a0, $a0, 1			# advance to next char in string
 	j toMorse_loop
 	
-tomorse_doneSucess:
+toMorse_doneSucsess:
 	li $t1, 1				# sucess = true
 	
 toMorse_done:
@@ -239,4 +266,5 @@ MorseZ: .asciiz "--.."
 
 
 FMorseCipherArray: .asciiz ".....-..x.-..--.-x.x..x-.xx-..-.--.x--.-----x-x.-x--xxx..x.-x.xx-.x--x-xxx.xx-"
+
 
