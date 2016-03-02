@@ -140,7 +140,7 @@ toMorse_loop:
 	sw $a2, 4($sp)
 	sw $ra, 0($sp)
 	la $t7, ($a0)				# function params
-	la $a1, length2Char_char
+	la $a1, length2Char0
 	jal length2Char
 	# v0 is length
 	lw $t0, 28($sp)				# restore registers
@@ -153,9 +153,20 @@ toMorse_loop:
 	lw $ra, 0($sp)
 	addi $sp, $sp, 28			# dealocate space on stack
 	
+toMorse_store:
+	lb $t2, ($t7)				# morse char of total morse string
+	beqz $t2, toMorse_increment		# reached the end of the string
+	sb $t2, 0($a1)				# store morse char
+	addi $t7, $t7, 1			# increment morse chars
+	addi $a1, $a1, 1			# increment morse final string
+	j toMorse_store
 	
-	#addi $t2, $t2, 1			# chars converted++
-	add $t0, $t0, $v0			# chars converted - length
+toMorse_increment:
+	li $t2, 'x'
+	sb $t2, ($a1)				# add x between chars
+	addi $a1, $a1, 1			# increment morese final string
+	addi $t0, $t0, 1			# chars converted++
+	add $t0, $t0, $v0			# chars converted + length
 	sub $a2, $a2, $v0			# size - length
 	addi $a0, $a0, 1			# advance to next char in string
 	j toMorse_loop
@@ -164,7 +175,7 @@ toMorse_doneSucsess:
 	li $t1, 1				# sucess = true
 	
 toMorse_done:
-	#add /0
+	#add x/0
 	move $v0, $t0
 	move $v1, $t1
 	jr $ra
@@ -269,4 +280,4 @@ MorseZ: .asciiz "--.."
 
 FMorseCipherArray: .asciiz ".....-..x.-..--.-x.x..x-.xx-..-.--.x--.-----x-x.-x--xxx..x.-x.xx-.x--x-xxx.xx-"
 
-
+length2Char0: .asciiz "0"
