@@ -116,7 +116,7 @@ strcmp_done:
 toMorse:
 	li $t0, 0 				# morse characters encoded 
 	li $t1, 0 				# sucsessful encoding = false
-	li $t2, 0 				# num chars converted
+	#li $t2, 0 				# num chars converted
 	blt $a2, 1, toMorse_done		# if size is less than 1
 	
 toMorse_loop:
@@ -153,8 +153,9 @@ toMorse_loop:
 	addi $sp, $sp, 28			# dealocate space on stack
 	
 	
-	addi $t2, $t2, 1			# chars converted++
-	add $a2, $a2, $v0			# size - length
+	#addi $t2, $t2, 1			# chars converted++
+	add $t0, $t0, $v0			# chars converted - length
+	sub $a2, $a2, $v0			# size - length
 	addi $a0, $a0, 1			# advance to next char in string
 	j toMorse_loop
 	
