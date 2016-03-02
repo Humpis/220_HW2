@@ -165,7 +165,7 @@ main:
 
 	la $a0, strcmp_str1
 	la $a1, strcmp_str2
-	li $a2, 4
+	li $a2, 0
 	jal strcmp
 
 	move $t0, $v0

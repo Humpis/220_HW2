@@ -50,8 +50,60 @@ done_length2char:
 strcmp:
 	li $t0, 0 				# num of same chars
 	li $t1, 0 				# equal = false
-	blt $a2, 0, strcmp_done
+	li $t2, 0				# length counter
+	li $t4, 1				# for subtracting by 1
+	blt $a2, 0, strcmp_done			# if length < 0 return 00
+	beqz $a2, strcmp_loop0			# if 0, let er rip
 	
+strcmp_count:
+	beqz $a2, strcmp_test			# if str is >= length
+	lb $t5 ($a0)
+	lb $t6 ($a1)
+	beqz $t5, strcmp_done			# hit NULL character at end of string
+	beqz $t6, strcmp_done			# hit NULL character at end of string
+	addi $t2, $t2, 1			# counter++
+	addi $a0, $a0, 1			# advance to next character of string	
+	addi $a1, $a1, 1			# advance to next character of string	
+	sub $a2, $a2, $t4			# length--
+	j strcmp_count	
+	
+strcmp_test:
+	sub $a0, $a0, $t2			# make the starting adress of the string right
+	sub $a1, $a1, $t2			# make the starting adress of the string right
+	add $a2, $a2, $t2			# make the legnth right
+
+strcmp_loop:
+	beqz $a2, strcmp_match			# if all comparisons have been made
+	lb $t2, 0($a0)				# letter of str1
+	lb $t3, 0($a1)				# letter of str2
+	beqz $t2, strcmp_done			# hit NULL character at end of string
+	beqz $t3, strcmp_done			# hit NULL character at end of string
+	bne $t2, $t3, strcmp_done		# if the letters are !=
+	addi $t0, $t0, 1			# samecounter++
+	sub $a2, $a2, $t4			# length--
+	addi $a0, $a0, 1			# advance to next character of string	
+	addi $a1, $a1, 1			# advance to next character of string	
+	j strcmp_loop
+	
+strcmp_loop0:
+	lb $t2, 0($a0)				# letter of str1
+	lb $t3, 0($a1)				# letter of str2
+	beqz $t2, strcmp_done0			# hit NULL character at end of string
+	beqz $t3, strcmp_done0			# hit NULL character at end of string
+	bne $t2, $t3, strcmp_done		# if the letters are !=
+	addi $t0, $t0, 1			# samecounter++
+	#sub $a2, $a2, $t4			# length--
+	addi $a0, $a0, 1			# advance to next character of string	
+	addi $a1, $a1, 1			# advance to next character of string	
+	j strcmp_loop0
+	
+strcmp_done0:
+	bnez $t2, strcmp_done			# !hit NULL character at end of string
+	bnez $t3, strcmp_done			# !hit NULL character at end of string
+	
+strcmp_match:
+	li $t1, 1				# equal = true
+
 strcmp_done:
 	move $v0, $t0
 	move $v1, $t1
