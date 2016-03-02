@@ -121,6 +121,7 @@ toMorse:
 	
 toMorse_loop:
 	blt $a2, 1, toMorse_done		# out of size, need to put /0
+	#blt $a2, $t2, toMorse_done		# last morse seq doesnt fit	actually its probably best to remove the extra chars rather than add parts of it. tbd in the done function
 	lb $t3, ($a0)				# charactor of string to be turned into morse
 	beqz $t3, toMorse_doneSucsess		# converted all chars
 	addi $t4, $t3, -33			# convert ascii to array[i]
