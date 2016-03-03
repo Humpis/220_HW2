@@ -120,11 +120,13 @@ toMorse:
 	blt $a2, 1, toMorse_done		# if size is less than 1
 	
 toMorse_loop:
-	blt $a2, 1, toMorse_done		# out of size, need to put /0
+	blt $a2, 2, toMorse_done		# out of size, need to put /0
 	#blt $a2, $t2, toMorse_done		# last morse seq doesnt fit	actually its probably best to remove the extra chars rather than add parts of it. tbd in the done function
 	lb $t3, ($a0)				# charactor of string to be turned into morse
-	beqz $t3, toMorse_doneSucsess		# converted all chars
+	beqz $t3, toMorse_done			# converted all chars
 	addi $t4, $t3, -33			# convert ascii to array[i]
+	bgt $t4, 57, toMorse_iterate		# if its > z
+	blt $t4, 0, toMorse_iterate		# if its < !
 	sll $t4, $t4, 2				# t4 = t4*4
 	la $t5, MorseCode
 	add $t6, $t5, $t4			# t6 = array[i]
@@ -154,31 +156,55 @@ toMorse_loop:
 	addi $sp, $sp, 28			# dealocate space on stack
 	
 toMorse_store:
+	#beqz $t7, toMorse_loop		# reached the end of the string
 	lb $t2, ($t7)				# morse char of total morse string
 	beqz $t2, toMorse_increment		# reached the end of the string
 	sb $t2, 0($a1)				# store morse char
 	addi $t7, $t7, 1			# increment morse chars
 	addi $a1, $a1, 1			# increment morse final string
+	addi $t0, $t0, 1			# chars converted + length
+	addi $a2, $a2, -1			# size - length
 	j toMorse_store
+	
+toMorse_iterate:
+	addi $a0, $a0, 1			# advance to next char in string
+	j toMorse_loop
 	
 toMorse_increment:
 	li $t2, 'x'
 	sb $t2, ($a1)				# add x between chars
 	addi $a1, $a1, 1			# increment morese final string
 	addi $t0, $t0, 1			# chars converted++
-	add $t0, $t0, $v0			# chars converted + length
-	sub $a2, $a2, $v0			# size - length
+	addi $a2, $a2, -1			# size - length
+	#add $t0, $t0, $v0			# chars converted + length
+	#sub $a2, $a2, $v0			# size - length
 	addi $a0, $a0, 1			# advance to next char in string
 	j toMorse_loop
 	
-toMorse_doneSucsess:
+toMorse_done:
+	li $t2, 'x'
+	sb $t2, ($a1)				# add x at end
+	addi $t0, $t0, 1			# chars converted + length
+	addi $a2, $a2, -1			# size - length
+	addi $a1, $a1, 1			# increment morse final string
+	blt $a2, 1, toMorse_done1 		# if its too long
 	li $t1, 1				# sucess = true
 	
-toMorse_done:
-	#add x/0
+toMorse_doneFinal:
+	li $t2, 0
+	sb $t2, ($a1)				# add 0 at end
+	addi $t0, $t0, 1			# chars converted + length
 	move $v0, $t0
 	move $v1, $t1
 	jr $ra
+	
+toMorse_done1:
+	bge $a2, 1, toMorse_doneFinal		# if final string is apropriate length to finalize
+	addi $a1, $a1, -1			# increment morse final string
+	sb $zero, ($a1)
+	addi $a2, $a2, 1
+	addi $t0, $t0, -1
+	j toMorse_done1
 
 createKey:
 	#Define your code here

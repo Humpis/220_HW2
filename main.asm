@@ -24,10 +24,10 @@ strcmp_str2: .asciiz "MIPS - Millions.of.Instruction.Per...Second"
 
 # toMorse
 toMorse_header: .asciiz "\n\n********* toMorse *********\n"
-toMorse_plaintext: .asciiz "MIPS!!"
-toMorse_mcmsg: .space 30
+toMorse_plaintext: .asciiz "C "
+toMorse_mcmsg: .space 10
 .align 2
-toMorse_size: .word 30
+toMorse_size: .word 10
 
 # createKey
 createKey_header: .asciiz "\n\n********* createKey *********\n"
