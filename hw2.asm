@@ -117,7 +117,13 @@ toMorse:
 	li $t0, 0 				# morse characters encoded 
 	li $t1, 0 				# sucsessful encoding = false
 	#li $t2, 0 				# num chars converted
+	#li $t8, 0 				# legit char = false
+	#li $t9, 0				# " "x already = false
 	blt $a2, 1, toMorse_done		# if size is less than 1
+	lb $t3, ($a0)				# charactor of string to be turned into morse
+	li $t1, 1 				# sucsessful encoding = false
+	beqz $t3, toMorse_doneFinal		# converted all chars
+	li $t1, 0 				# sucsessful encoding = false
 	
 toMorse_loop:
 	blt $a2, 2, toMorse_done		# out of size, need to put /0
@@ -125,35 +131,38 @@ toMorse_loop:
 	lb $t3, ($a0)				# charactor of string to be turned into morse
 	beqz $t3, toMorse_done			# converted all chars
 	addi $t4, $t3, -33			# convert ascii to array[i]
+	beq $t4, -1, toMorse_0			# if its " "
 	bgt $t4, 57, toMorse_iterate		# if its > z
 	blt $t4, 0, toMorse_iterate		# if its < !
+	#li $t8, 1				# legit char = true
+	#li $t9, 0				# " "x already = false
 	sll $t4, $t4, 2				# t4 = t4*4
 	la $t5, MorseCode
 	add $t6, $t5, $t4			# t6 = array[i]
 	lw $t7, 0($t6)				# word at array[i]
 	#save registers and find size of morse code
-	addi $sp, $sp, -28			# make space on stack
-	sw $t0, 28($sp)				# save registers
-	sw $t1, 24($sp)
-	sw $t2, 20($sp)
-	sw $t7, 16($sp)
-	sw $a0, 12($sp)
-	sw $a1, 8($sp)
-	sw $a2, 4($sp)
-	sw $ra, 0($sp)
-	la $t7, ($a0)				# function params
-	la $a1, length2Char0
-	jal length2Char
+	#addi $sp, $sp, -28			# make space on stack
+	#sw $t0, 28($sp)				# save registers
+	#sw $t1, 24($sp)
+	#sw $t2, 20($sp)
+	#sw $t7, 16($sp)
+	#sw $a0, 12($sp)
+	#sw $a1, 8($sp)
+	#sw $a2, 4($sp)
+	#sw $ra, 0($sp)
+	#la $t7, ($a0)				# function params
+	#la $a1, length2Char0
+	#jal length2Char
 	# v0 is length
-	lw $t0, 28($sp)				# restore registers
-	lw $t1, 24($sp)
-	lw $t2, 20($sp)
-	lw $t7, 16($sp)
-	lw $a0, 12($sp)
-	lw $a1, 8($sp)
-	lw $a2, 4($sp)
-	lw $ra, 0($sp)
-	addi $sp, $sp, 28			# dealocate space on stack
+	#lw $t0, 28($sp)				# restore registers
+	#lw $t1, 24($sp)
+	#lw $t2, 20($sp)
+	#lw $t7, 16($sp)
+	#lw $a0, 12($sp)
+	#lw $a1, 8($sp)
+	#lw $a2, 4($sp)
+	#lw $ra, 0($sp)
+	#addi $sp, $sp, 28			# dealocate space on stack
 	
 toMorse_store:
 	#beqz $t7, toMorse_loop		# reached the end of the string
@@ -171,6 +180,22 @@ toMorse_iterate:
 	j toMorse_loop
 	
 toMorse_increment:
+	li $t2, 'x'
+	sb $t2, ($a1)				# add x between chars
+	addi $a1, $a1, 1			# increment morese final string
+	addi $t0, $t0, 1			# chars converted++
+	addi $a2, $a2, -1			# size - length
+	#add $t0, $t0, $v0			# chars converted + length
+	#sub $a2, $a2, $v0			# size - length
+	addi $a0, $a0, 1			# advance to next char in string
+	j toMorse_loop
+	
+toMorse_0:
+	#beq
+	#beq $t8, 0, toMorse_loop
+	#beq $t9, 1, toMorse_loop
+	li $t8, 1				# legit char = false
+	li $t9, 1				# " "x = true
 	li $t2, 'x'
 	sb $t2, ($a1)				# add x between chars
 	addi $a1, $a1, 1			# increment morese final string
@@ -207,7 +232,57 @@ toMorse_done1:
 	j toMorse_done1
 
 createKey:
-	#Define your code here
+	#save registers and make string uppercase
+	addi $sp, $sp, -4			# make space on stack			
+	sw $ra, 0($sp)				# save registers
+	jal toUpper
+	# v0 is uppered string
+	lw $ra, 0($sp)				# restore registers
+	addi $sp, $sp, 4			# dealocate space on stack
+	# make array
+	la $s0, LetterArray
+	li $t0, 0 				# letter array counter
+	li $s1, 1				# for storing 1
+	
+createKey_array:
+	beq $t0, 26, createKey_loop		# when all letters have been init
+	sb $zero, 0($s0)			# put 0 in array[i] 
+	addi $t0, $t0, 1			# incriment array counter
+	addi $s0, $s0, 1			# incriment array
+	j createKey_array
+	
+createKey_loop:
+	li $t0, 0				# reset letter array counter for use in loop2
+	lb $t1, 0($a0)				# letter of string
+	beqz $t1, createKey_loop2		# when we run out of letters 
+	addi $t2, $t1, -65			# t2 = array index of letter
+	blt $t2, 0, createKey_loopIncrement	# skip everything less than A 
+	bgt $t2, 25, createKey_loopIncrement	# skip everything greater than Z
+	add $s0, $s0, $t2			# move s0 to array index of letter
+	lb $t4, ($s0)				# char at array[i]
+	beq $t4, 1, createKey_loopIncrement	# if letter has been used
+	sb $s1, ($s0)				# if letter is about to be used make it marked as 1 in the array
+	sb $t1, ($a1)				# put the letter in the final string
+	sub $s0, $s0, $t2			# reset pointer of 1/0_letters array
+	addi $a1, $a1, 1 			# incrememnt the final string
+	
+createKey_loopIncrement:
+	addi $a0, $a0, 1			# increment string
+	j createKey_loop
+	
+createKey_loop2:
+	beq $t0, 26, createKey_done		# when all letters have been read
+	lb $t4, ($s0)
+	beq $t4, 1, createKey_loop2Increment	# if the letter has already been used
+	sb $t4, ($a1)				# put the letter in if its not been used yet alphabetically
+	addi $a1, $a1, 1 			# incrememnt the final string
+	
+createKey_loop2Increment:
+	addi $s0, $s0, 1			# increment letter array
+	addi $t0, $t0, 1			# letter array counter ++
+	j createKey_loop2
+
+createKey_done:
 	jr $ra
 
 keyIndex:
@@ -307,3 +382,6 @@ MorseZ: .asciiz "--.."
 FMorseCipherArray: .asciiz ".....-..x.-..--.-x.x..x-.xx-..-.--.x--.-----x-x.-x--xxx..x.-x.xx-.x--x-xxx.xx-"
 
 length2Char0: .asciiz "0"
+
+LetterArray: .space 26
+.byte 0
